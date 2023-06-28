@@ -1,0 +1,7 @@
+[profile.default]
+src = 'src'
+out = 'out'
+solc = '0.8.19'
+
+[profile.default.optimizer_details]
+yul = false
