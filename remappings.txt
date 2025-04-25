@@ -1,0 +1,2 @@
+@ensdomains/ens-contracts=node_modules/@ensdomains/ens-contracts
+@openzeppelin/contracts=node_modules/@openzeppelin/contracts

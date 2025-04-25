@@ -1,23 +1,69 @@
 import { createPublicClient, http } from 'viem';
-import { mainnet } from 'viem/chains';
-import { abi, bytecode } from '../fragments/BlockDataHelper';
+import { base, mainnet } from 'viem/chains';
+import {
+  BlockDataHelperABI,
+  BlockDataHelperBytecode,
+} from '../fragments/BlockDataHelper';
+import {
+  ENSReverseRecordsABI,
+  ENSReverseRecordsBytecode,
+} from '../fragments/ENSReverseRecords';
 import { executeHelper } from './lib/executeHelper';
 
-const client = createPublicClient({
+const baseClient = createPublicClient({
+  chain: base,
+  transport: http(),
+});
+
+const mainnetClient = createPublicClient({
   chain: mainnet,
   transport: http(),
 });
 
 async function main() {
-  const data = await executeHelper({
-    abi,
-    bytecode,
-    args: [1337n],
-    client,
-    functionName: 'getBlockData',
-  });
+  {
+    // Block data example
+    console.log('Fetching latest block data…');
 
-  console.log(data);
+    const blockData = await executeHelper({
+      abi: BlockDataHelperABI,
+      bytecode: BlockDataHelperBytecode,
+      args: [1337n],
+      client: baseClient,
+      functionName: 'getBlockData',
+    });
+
+    // The resulting `blockData` is correctly typed based on the ABI
+    // generated and exported in `fragments/BlockDataHelper.ts`
+
+    console.log(blockData);
+  }
+
+  {
+    // ENS resolver example
+    console.log('Resolving ENS names…');
+
+    const ensData = await executeHelper({
+      abi: ENSReverseRecordsABI,
+      bytecode: ENSReverseRecordsBytecode,
+      args: [
+        '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e', // ENS registry address
+        [
+          // addresses to get ENS names for
+          '0xfd37f4625ca5816157d55a5b3f7dd8dd5f8a0c2f',
+          '0xfffff449f1a35eb0facca8d4659d8e15cf2f77ba',
+          '0x6860f1A0cF179eD93ABd3739c7f6c8961A4EEa3c',
+        ],
+      ],
+      client: mainnetClient,
+      functionName: 'getNames',
+    });
+
+    // The resulting `ensData` is correctly typed based on the ABI
+    // generated and exported in `fragments/ENSReverseRecords.ts`
+
+    console.log(ensData);
+  }
 }
 
 main();

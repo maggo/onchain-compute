@@ -6,26 +6,34 @@ import type {
   ExtractAbiFunctionNames,
   Narrow,
 } from 'abitype';
-import { PublicClient, decodeFunctionResult, encodeDeployData } from 'viem';
+import {
+  type Chain,
+  type PublicClient,
+  type Transport,
+  decodeFunctionResult,
+  encodeDeployData,
+} from 'viem';
 
 export type ExecuteHelperProps<
   TAbi extends Abi,
   TArgs extends AbiParametersToPrimitiveTypes<
     Extract<TAbi[number], { type: 'constructor' }>['inputs']
   >,
-  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>,
+  TTransport extends Transport,
+  TChain extends Chain,
 > = {
   abi: Narrow<TAbi>;
   bytecode: `0x${string}`;
   args: TArgs;
-  client: PublicClient;
+  client: PublicClient<TTransport, TChain>;
   /** The contract function which return type is being used to decode the data */
   functionName: TFunctionName;
 };
 
 export type ExecuteHelperReturnType<
   TAbi extends Abi,
-  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>,
 > = AbiParameterToPrimitiveType<
   ExtractAbiFunction<TAbi, TFunctionName>['outputs'][0]
 >;
@@ -35,14 +43,16 @@ export async function executeHelper<
   TArgs extends AbiParametersToPrimitiveTypes<
     Extract<TAbi[number], { type: 'constructor' }>['inputs']
   >,
-  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>,
+  TTransport extends Transport,
+  TChain extends Chain,
 >({
   abi,
   bytecode,
   args,
   functionName,
   client,
-}: ExecuteHelperProps<TAbi, TArgs, TFunctionName>): Promise<
+}: ExecuteHelperProps<TAbi, TArgs, TFunctionName, TTransport, TChain>): Promise<
   ExecuteHelperReturnType<TAbi, TFunctionName>
 > {
   const deployData = encodeDeployData<Abi>({
@@ -53,7 +63,7 @@ export async function executeHelper<
 
   const { data } = await client.call({
     data: deployData,
-  });
+  } as any);
 
   if (!data) {
     throw new Error('HELPER_CALL_FAILED');

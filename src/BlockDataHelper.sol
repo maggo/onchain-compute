@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity =0.8.19;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.19;
 
 contract BlockDataHelper {
     struct BlockData {
@@ -24,7 +24,7 @@ contract BlockDataHelper {
         blockData = BlockData(
             block.number,
             block.timestamp,
-            block.difficulty,
+            block.prevrandao,
             randomNumber
         );
     }

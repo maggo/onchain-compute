@@ -14,14 +14,16 @@ if (!fs.existsSync(FRAGMENTS_DIR)) {
 // Get all helper contract names
 const helperContractNames = fs
   .readdirSync(CONTRACTS_DIR)
+  .filter((contractPath) => contractPath.endsWith('.sol'))
   .map((contractPath) => path.basename(contractPath, '.sol'));
 
-// Load prettier config
-prettier
-  .resolveConfig('.')
-  .then((options) => {
+async function transformFragments() {
+  try {
+    // Load prettier config
+    const options = await prettier.resolveConfig('.');
+
     // Transform JSON files into TS files
-    helperContractNames.forEach((contractName) => {
+    for (const contractName of helperContractNames) {
       const content = fs.readFileSync(
         path.join(OUT_DIR, `${contractName}.sol`, `${contractName}.json`)
       );
@@ -33,22 +35,27 @@ prettier
 
       const fileName = `${contractName}.ts`;
 
-      const fileContent = prettier.format(
+      const fileContent = await prettier.format(
         `
-export const abi = ${JSON.stringify(abi, null, 2)} as const;
+export const ${contractName}ABI = ${JSON.stringify(abi, null, 2)} as const;
 
-export const bytecode: \`0x\${string}\` = '${bytecode}';
+export const ${contractName}Bytecode: \`0x\${string}\` = '${bytecode}';
   `,
         { parser: 'typescript', ...options }
       );
 
       fs.writeFileSync(path.join(FRAGMENTS_DIR, fileName), fileContent);
-    });
-  })
-  .then(() => {
+    }
+
     console.log(
       `Generated fragments for helper contracts: \n\n${helperContractNames.join(
         '\n'
       )}`
     );
-  });
+  } catch (error) {
+    console.error('Error transforming fragments:', error);
+    process.exit(1);
+  }
+}
+
+transformFragments();
