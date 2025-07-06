@@ -28,7 +28,7 @@ async function main() {
     const blockData = await executeHelper({
       abi: BlockDataHelperABI,
       bytecode: BlockDataHelperBytecode,
-      args: [1337n],
+      args: [BigInt(Math.floor(Math.random() * 1337))],
       client: baseClient,
       functionName: 'getBlockData',
     });
@@ -38,6 +38,8 @@ async function main() {
 
     console.log(blockData);
   }
+
+  console.log('--------------------------------');
 
   {
     // ENS resolver example
@@ -50,9 +52,9 @@ async function main() {
         '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e', // ENS registry address
         [
           // addresses to get ENS names for
-          '0xfd37f4625ca5816157d55a5b3f7dd8dd5f8a0c2f',
-          '0xfffff449f1a35eb0facca8d4659d8e15cf2f77ba',
           '0x6860f1A0cF179eD93ABd3739c7f6c8961A4EEa3c',
+          '0xfffff449f1a35eb0facca8d4659d8e15cf2f77ba',
+          '0xfd37f4625ca5816157d55a5b3f7dd8dd5f8a0c2f',
         ],
       ],
       client: mainnetClient,

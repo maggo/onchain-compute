@@ -4,7 +4,7 @@ pragma solidity >=0.8.19;
 import {ENS} from '@ensdomains/ens-contracts/contracts/registry/ENS.sol';
 import {ReverseRegistrar} from '@ensdomains/ens-contracts/contracts/reverseRegistrar/ReverseRegistrar.sol';
 import {Resolver} from '@ensdomains/ens-contracts/contracts/resolvers/Resolver.sol';
-import {NameEncoder} from '@ensdomains/ens-contracts/contracts/utils/NameEncoder.sol';
+import {NameCoder} from '@ensdomains/ens-contracts/contracts/utils/NameCoder.sol';
 
 abstract contract NameResolver {
     function setName(bytes32 node, string memory name) public virtual;
@@ -52,7 +52,8 @@ contract ENSReverseRecords {
                 if (bytes(name).length == 0) {
                     continue;
                 }
-                (, bytes32 namehash) = NameEncoder.dnsEncodeName(name);
+                bytes memory dnsEncoded = NameCoder.encode(name);
+                bytes32 namehash = NameCoder.namehash(dnsEncoded, 0);
                 address forwardResolverAddress = ens.resolver(namehash);
                 if (forwardResolverAddress != address(0x0)) {
                     Resolver forwardResolver = Resolver(forwardResolverAddress);
